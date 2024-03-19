@@ -1,0 +1,311 @@
+﻿Program.Sub.ScreenSU.Start
+Gui.SS_Form1..Create
+Gui.SS_Form1..Caption("Payroll Export")
+Gui.SS_Form1..Size(2670,2175)
+Gui.SS_Form1..Position(0,0)
+Gui.SS_Form1..ForeColor(0)
+Gui.SS_Form1..Backcolor(-2147483633)
+Gui.SS_Form1..MaxButton(False)
+Gui.SS_Form1..MinButton(False)
+Gui.SS_Form1..MousePointer(0)
+Gui.SS_Form1..Sizeable(False)
+Gui.SS_Form1..Event(UnLoad,ss_form1_unload)
+Gui.SS_Form1..MinX(0)
+Gui.SS_Form1..MinY(0)
+Gui.SS_Form1.cmdOk.Create(button)
+Gui.SS_Form1.cmdOk.Caption("Ok")
+Gui.SS_Form1.cmdOk.Size(1005,360)
+Gui.SS_Form1.cmdOk.Position(75,960)
+Gui.SS_Form1.cmdOk.TabStop(True)
+Gui.SS_Form1.cmdOk.TabIndex(5)
+Gui.SS_Form1.cmdOk.DefaultValue("")
+Gui.SS_Form1.cmdOk.Event(Click,cmdok_click)
+Gui.SS_Form1.lbl_txtFile.Create(label,"File Name",True,1800,195,1,75,255,True,0,"Arial",8,-2147483633,0)
+Gui.SS_Form1.lbl_txtFile.DefaultValue("")
+Gui.SS_Form1.lbl_txtFile.LabelStretch(True)
+Gui.SS_Form1.txtFile.Create(textbox,"",True,1800,300,1,75,465,True,0,"Arial",8,16777215,1)
+Gui.SS_Form1.txtFile.Text("")
+Gui.SS_Form1.txtFile.TabStop(True)
+Gui.SS_Form1.txtFile.TabIndex(3)
+Gui.SS_Form1.txtFile.DefaultValue("")
+Gui.SS_Form1.cmd_txtFile.Create(button)
+Gui.SS_Form1.cmd_txtFile.Caption("^")
+Gui.SS_Form1.cmd_txtFile.Size(330,330)
+Gui.SS_Form1.cmd_txtFile.Position(1950,465)
+Gui.SS_Form1.cmd_txtFile.TabStop(True)
+Gui.SS_Form1.cmd_txtFile.TabIndex(4)
+Gui.SS_Form1.cmd_txtFile.DefaultValue("")
+Gui.SS_Form1.cmd_txtFile.Event(Click,cmd_txtFile_Click)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+
+'************************************************
+'Developer Ranjit Nair
+'Customer :  HENNIG INC
+'Custom Payroll Export
+'*************************************************
+
+'Modification for NJ SULLIVAN COMPANY, INC. 6/13/22
+'5718 ---> 6793
+'Sam Stanka
+'Quote:13447-0
+'Customer needs a Paylocity export that includes hourly employees and earnings codes.
+
+
+f.Intrinsic.Control.If(v.Caller.Hook,=,15290)
+	gui.SS_Form1.txtFile.SetFocus
+	gui.SS_Form1..Show
+f.Intrinsic.Control.endif
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.Main.End
+
+Program.Sub.cmdok_click.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+
+V.Local.smsg.Declare
+
+gui.SS_Form1..Visible(false)
+F.Intrinsic.String.Build("Writing {0} file",V.Screen.SS_Form1!txtFile.Text,V.Local.smsg)
+f.Intrinsic.UI.InvokeWaitDialog(v.Local.sMsg,"Payroll Export")
+
+f.Intrinsic.Control.CallSub(collectdata)
+f.Intrinsic.UI.CloseWaitDialog
+f.Intrinsic.Control.CallSub(ss_form1_unload)
+
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.cmdok_click.End
+
+Program.Sub.collectData.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+
+v.Local.sRunTime.Declare
+v.Local.sRunDate.Declare
+v.Local.sSel.Declare
+v.Local.iCount.Declare
+v.Local.iC.Declare
+v.Local.sFilter.Declare
+v.Local.sRet.Declare
+v.Local.sRet1.Declare
+v.Local.sRet2.Declare
+v.Local.sRet3.Declare
+v.Local.sRet4.Declare
+v.Local.sLineTxt.Declare
+v.local.sCOCode.Declare
+v.local.sBatchID.Declare
+v.local.sEmp.Declare
+v.local.sBatchdesc.Declare
+v.Local.fRT.Declare
+v.Local.fOT.Declare
+v.Local.fPTO.Declare
+v.Local.fHT.Declare
+v.Local.fDT.Declare
+v.Local.fJ.Declare
+v.Local.fB.Declare
+v.Local.fW.Declare
+v.Local.iCRow.Declare
+v.Local.sFileName.Declare
+v.Local.sPaytype.Declare
+
+V.Local.sCymd.Declare
+V.Local.sMon.Declare
+v.Local.sDay.Declare
+V.Local.sYear.Declare
+variable.local.DDATE.Declare
+v.Local.sRunDate1.Declare
+
+
+f.Intrinsic.String.Mid(v.Passed.888888,9,6,v.Local.sRunTime)
+f.Intrinsic.String.Left(v.Passed.888888,8,v.Local.sRunDate)
+
+
+'v.Local.sRet.Set("2019092315262700")
+'f.Intrinsic.String.Mid(v.Local.sRet,9,6,v.Local.sRunTime)
+'f.Intrinsic.String.Left(v.Local.sRet,8,v.Local.sRunDate)
+
+
+'format the dates and time
+
+'f.Intrinsic.String.Left(v.Passed.BEGDate,8,v.Local.sRunDate1)
+'F.Intrinsic.String.Left(v.Local.sRunDate1,8,V.Local.sCymd)
+'F.Intrinsic.String.Mid(v.Local.sRunDate1,1,4,V.Local.sYear)
+'F.Intrinsic.String.Mid(v.Local.sRunDate1,5,2,V.Local.sMon)
+'F.Intrinsic.String.Mid(v.Local.sRunDate1,7,2,V.Local.sDay)
+'f.Intrinsic.String.Build("{0}{1}{2}",V.Local.sMon,v.Local.sDay,V.Local.sYear,V.Local.sMon)
+
+
+'Function.Intrinsic.Date.ConvertDString(V.Local.sMon,"MM/DD/YYYY",variable.local.DDATE)
+
+'f.Intrinsic.Date.DateAdd("D",6,variable.local.DDATE,variable.local.DDATE)
+'f.Intrinsic.String.Format(variable.local.DDATE,"m",v.Local.sRet1)
+'f.Intrinsic.String.Format(variable.local.DDATE,"dd",v.Local.sRet2)
+
+'f.Intrinsic.Date.DateAdd("D",6,variable.local.DDATE,variable.local.DDATE)
+'f.Intrinsic.String.Format(variable.local.DDATE,"m",v.Local.sRet3)
+'f.Intrinsic.String.Format(variable.local.DDATE,"dd",v.Local.sRet4)
+
+
+' look for all records for the selected pay period
+f.Intrinsic.String.Build("select Employee,Type,descr, sum(CAST(RTRIM(hours) AS DOUBLE)) as HRS from Pyrl_Labor_Xfer where Run_Cymd = '{0}' and Run_Time = '{1}' and Employee in (Select Employee From EMPLOYEE_MSTR where PAY_TYPE = 'H') and type <> 'RT' group by Employee, Type,descr ",v.Local.sRunDate,v.Local.sRunTime,v.Local.sSel)
+
+f.ODBC.Connection!Con.OpenConnection(v.Ambient.PDSN,v.Ambient.PUser,v.Ambient.PPass)
+
+f.Data.DataTable.CreateFromSQL("DTPyrl","con",v.Local.sSel)
+
+
+'SUM RT to REG
+f.Intrinsic.String.Build("select Employee, sum(CAST(RTRIM(hours) AS DOUBLE)) as HRS from Pyrl_Labor_Xfer where Run_Cymd = '{0}' and Run_Time = '{1}' and  Employee in (Select Employee From EMPLOYEE_MSTR where PAY_TYPE = 'H') and type in('RT') group by Employee ",v.Local.sRunDate,v.Local.sRunTime,v.Local.sSel)
+f.Data.DataTable.CreateFromSQL("DTPyrl_2","con",v.Local.sSel)
+f.Data.DataTable.AddColumn("DTPyrl_2","Type","string","RT")
+f.Data.DataTable.AddColumn("DTPyrl_2","descr","string","1-Regular")
+f.Data.DataTable.Merge("DTPyrl_2","DTPyrl",True,2)
+
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'create dictionary for Payloicty employee ID from the EMPLOYEE_MSTR.COMMENTS_1 field
+
+F.Data.Dictionary.CreateFromSQL("dictEmployee","con","Select EMPLOYEE, RTRIM(COMMENTS_1) FROM EMPLOYEE_MSTR")
+F.Data.Dictionary.SetDefaultReturn("dictEmployee","")
+F.Data.Datatable.AddColumn("DTPyrl","PAYLOCITY_ID","string")
+F.Data.Datatable.FillFromDictionary("DTPyrl","dictEmployee","EMPLOYEE","PAYLOCITY_ID")
+F.Data.Dictionary.Close("dictEmployee")
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+f.Data.DataView.Create("DTPyrl","DVPyrl",22,"","Employee")
+
+v.Local.sFilter.Set("Type = 'RT'")
+Function.Data.DataView.SetFilter("DTPyrl","DVPyrl",v.Local.sFilter)
+f.Intrinsic.Control.If(Variable.DataView.DTPyrl!DVPyrl.rowcount,>,0)
+	Function.Data.Dataview.SetValue("DTPyrl","DVPyrl",-1,"Type","REG")
+Function.Intrinsic.Control.EndIf
+
+v.Local.sFilter.Set("Type = 'OT'")
+Function.Data.DataView.SetFilter("DTPyrl","DVPyrl",v.Local.sFilter)
+f.Intrinsic.Control.If(Variable.DataView.DTPyrl!DVPyrl.rowcount,>,0)
+	Function.Data.Dataview.SetValue("DTPyrl","DVPyrl",-1,"Type","OT")
+Function.Intrinsic.Control.EndIf
+
+'v.Local.sFilter.Set("Type = 'DT'")
+'Function.Data.DataView.SetFilter("DTPyrl","DVPyrl",v.Local.sFilter)
+'f.Intrinsic.Control.If(Variable.DataView.DTPyrl!DVPyrl.rowcount,>,0)
+'	Function.Data.Dataview.SetValue("DTPyrl","DVPyrl",-1,"Type","DBL")
+'Function.Intrinsic.Control.EndIf
+
+v.Local.sFilter.Set("descr = 'VACATION'")
+Function.Data.DataView.SetFilter("DTPyrl","DVPyrl",v.Local.sFilter)
+f.Intrinsic.Control.If(Variable.DataView.DTPyrl!DVPyrl.rowcount,>,0)
+	Function.Data.Dataview.SetValue("DTPyrl","DVPyrl",-1,"Type","PTO")
+Function.Intrinsic.Control.EndIf
+
+v.Local.sFilter.Set("descr = 'HOLIDAY'")
+Function.Data.DataView.SetFilter("DTPyrl","DVPyrl",v.Local.sFilter)
+f.Intrinsic.Control.If(Variable.DataView.DTPyrl!DVPyrl.rowcount,>,0)
+	Function.Data.Dataview.SetValue("DTPyrl","DVPyrl",-1,"Type","HOL")
+Function.Intrinsic.Control.EndIf
+
+v.Local.sFilter.Set("descr = 'SICK'")
+Function.Data.DataView.SetFilter("DTPyrl","DVPyrl",v.Local.sFilter)
+f.Intrinsic.Control.If(Variable.DataView.DTPyrl!DVPyrl.rowcount,>,0)
+	Function.Data.Dataview.SetValue("DTPyrl","DVPyrl",-1,"Type","PTO")
+Function.Intrinsic.Control.EndIf
+
+'v.Local.sFilter.Set("descr like 'JURY%'")
+'Function.Data.DataView.SetFilter("DTPyrl","DVPyrl",v.Local.sFilter)
+'f.Intrinsic.Control.If(Variable.DataView.DTPyrl!DVPyrl.rowcount,>,0)
+'	Function.Data.Dataview.SetValue("DTPyrl","DVPyrl",-1,"Type","JURY")
+'Function.Intrinsic.Control.EndIf
+
+v.Local.sFilter.Set("descr like 'BEREAVEMENT%'")
+Function.Data.DataView.SetFilter("DTPyrl","DVPyrl",v.Local.sFilter)
+f.Intrinsic.Control.If(Variable.DataView.DTPyrl!DVPyrl.rowcount,>,0)
+	Function.Data.Dataview.SetValue("DTPyrl","DVPyrl",-1,"Type","BRVMT")
+Function.Intrinsic.Control.EndIf
+
+'v.Local.sFilter.Set("descr like 'ROAD%'")
+'Function.Data.DataView.SetFilter("DTPyrl","DVPyrl",v.Local.sFilter)
+'f.Intrinsic.Control.If(Variable.DataView.DTPyrl!DVPyrl.rowcount,>,0)
+'	Function.Data.Dataview.SetValue("DTPyrl","DVPyrl",-1,"Type","RDBNS")
+'Function.Intrinsic.Control.EndIf
+
+'Added in Bonus for 6783 for NJ SULLIVAN COMPANY, INC. Paylocity export 6/13/22 -SS 
+v.Local.sFilter.Set("descr = 'Bonus'")
+Function.Data.DataView.SetFilter("DTPyrl","DVPyrl",v.Local.sFilter)
+f.Intrinsic.Control.If(Variable.DataView.DTPyrl!DVPyrl.rowcount,>,0)
+	Function.Data.Dataview.SetValue("DTPyrl","DVPyrl",-1,"Type","BONUS")
+Function.Intrinsic.Control.EndIf
+
+'v.Local.sLineTxt.Set("Co Code,Batch ID,File #,Pay Type,Batch Description,Reg Hours,O/T Hours,Hours 4 Code,Hours 4 Amount,Hours 4 Code,Hours 4 Amount,Hours 3 Code,Hours 3 Amount,Hours 4 Code,Hours 4 Amount,Hours 3 Code,Hours 3 Amount")	
+f.Intrinsic.Control.For(v.Local.iCount,0,v.DataTable.DTPyrl.RowCount--,1)
+	f.Intrinsic.Control.If(v.Local.sLineTxt,=,"")
+		f.Intrinsic.String.Build("{0}{1}{0},{0}E{0},{0}{2}{0},{3}",v.Ambient.DblQuote,v.dataTable.DTPyrl(v.Local.iCount).PAYLOCITY_ID.fieldvaltrim,v.dataTable.DTPyrl(v.Local.iCount).Type.fieldvaltrim,v.dataTable.DTPyrl(v.Local.iCount).HRS.fieldvaltrim,v.Local.sLineTxt)
+	f.Intrinsic.Control.else
+		f.Intrinsic.String.Build("{4}{5}{0}{1}{0},{0}E{0},{0}{2}{0},{3}",v.Ambient.DblQuote,v.dataTable.DTPyrl(v.Local.iCount).PAYLOCITY_ID.fieldvaltrim,v.dataTable.DTPyrl(v.Local.iCount).Type.fieldvaltrim,v.dataTable.DTPyrl(v.Local.iCount).HRS.fieldvaltrim,v.Local.sLineTxt,v.Ambient.NewLine,v.Local.sLineTxt)
+	f.Intrinsic.Control.EndIf
+f.Intrinsic.Control.Next(v.Local.iCount)
+
+
+	f.Intrinsic.File.String2File(v.screen.SS_Form1!txtFile.text,v.Local.sLineTxt)
+	
+	f.Data.Dataview.Close("DTPyrl","DVPyrl")
+	f.Data.DataTable.Close("DTPyrl")
+	f.Data.DataTable.Close("DTPyrl_2")
+	
+	f.ODBC.Connection!Con.Close
+
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.collectData.End
+
+Program.Sub.cmd_txtFile_Click.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+
+V.Local.sFileName.Declare(String)
+V.Local.bValid.Declare(Boolean)
+
+F.Intrinsic.String.Build("{0}.txt",v.Screen.SS_Form1!txtFile.text,V.Local.sFileName)
+F.Intrinsic.UI.ShowSaveFileDialog(V.Local.sFileName,".txt",V.Local.sFileName)
+F.Intrinsic.Control.If(V.Local.sFileName.Trim,=,"***CANCEL***")
+	F.Intrinsic.Control.ExitSub
+F.Intrinsic.Control.EndIf
+
+gui.SS_Form1.txtFile.Text(v.Local.sFileName)
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.cmd_txtFile_Click.End
+
+Program.Sub.SS_Form1_Unload.Start
+f.Intrinsic.Control.End
+Program.Sub.SS_Form1_Unload.End
+
+Program.Sub.Catching.Start
+v.Local.sError.declare(string)
+F.Intrinsic.String.Build("Project: {0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}","GCG_6793_PYrlExport.g2u",V.Ambient.NewLine,v.Args.sub,V.Args.errorno,V.args.errordesc,V.Local.sError)
+f.Intrinsic.UI.Msgbox(v.Local.sError)
+F.Intrinsic.Control.CallSub(formview_unload)
+
+Program.Sub.Catching.End
+
+Program.Sub.Comments.Start
+${$0$}$$}$SUPERVSR$}$9/24/2019 10:28:57 AM$}$True
+${$5$}$2.0.0.0$}$2
+${$6$}$sstanka$}$20220802121839172$}$mP+zz5Tw3sT2/nyap+FbWm4triMPqjXD8sldwQJxQEtZ0fRJLS5zihuzuE6MNqp9PC0M6QILeFQ=
+Program.Sub.Comments.End
